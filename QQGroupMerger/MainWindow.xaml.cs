@@ -33,10 +33,12 @@ namespace QQGroupMerger {
         private void button1_Click(object sender, RoutedEventArgs e) {
             var dialog = new OpenFileDialog();
             dialog.Filter = "QQ聊天记录导出文件(*.mht)|*.mht";
+            dialog.Multiselect = true;
             if (dialog.ShowDialog() == System.Windows.Forms.DialogResult.OK) {
-                var filename = dialog.FileName;
-                // read the file
-                selectedMhtFiles.Add(filename);
+                var filenames = dialog.FileNames;
+                foreach (var filename in filenames) {
+                    selectedMhtFiles.Add(filename);
+                }
                 listBox1.Items.Refresh();
             }
         }
@@ -62,16 +64,16 @@ namespace QQGroupMerger {
                 foreach (var file in selectedMhtFiles) {
                     var reader = new MhtReader(file);
                     readers.Add(reader);
-                    reader.readAndParse();
+                    reader.Parse();
                 }
 
                 var merger = new MhtMerger(readers);
-                merger.merge();
-                merger.writeToHtml(targetDir);
+                merger.Merge();
+                merger.WriteToMultiHtml(targetDir);
 
                 // delete tmp dirs
                 foreach (var reader in readers) {
-                    Directory.Delete(reader.tmpDir, true);
+                    reader.DeleteTmpDir();
                 }
 
                 System.Windows.Forms.MessageBox.Show("合并成功");
